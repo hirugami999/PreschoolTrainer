@@ -59,7 +59,7 @@ class _MixedToTenTaskScreenState extends State<MixedToTenTaskScreen> {
     });
 
     Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted) return;
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
       nextTask();
     });
   }

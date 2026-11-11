@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'math_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -11,23 +12,16 @@ class HomeScreen extends StatelessWidget {
         children: [
           // Фон с математическими символами
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/math_bg.png',
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/images/math_bg.png', fit: BoxFit.cover),
           ),
 
           // Основная композиция
           Align(
             alignment: const Alignment(0, -0.15),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 340,
-                ),
+                constraints: const BoxConstraints(maxWidth: 340),
                 child: SizedBox(
                   height: 360,
                   child: Stack(
@@ -72,37 +66,39 @@ class HomeScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                  const MathScreen(),
+                                  builder: (context) => const MathScreen(),
                                 ),
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                              const Color(0xFF6C83A4),
+                              backgroundColor: const Color(0xFF6C83A4),
                               foregroundColor: Colors.white,
                               elevation: 8,
                               shadowColor: Colors.black38,
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                BorderRadius.circular(26),
+                                borderRadius: BorderRadius.circular(26),
                               ),
                             ),
                             child: const Row(
-                              mainAxisAlignment:
-                              MainAxisAlignment.spaceEvenly,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                Text(
-                                  'Математика',
-                                  style: TextStyle(
-                                    fontSize: 27,
-                                    fontWeight: FontWeight.w600,
+                                Flexible(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      'Математика',
+                                      maxLines: 1,
+                                      style: TextStyle(
+                                        fontSize: 27,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                                   ),
                                 ),
+                                SizedBox(width: 8),
                                 CircleAvatar(
                                   radius: 23,
-                                  backgroundColor:
-                                  Color(0xFF8299BA),
+                                  backgroundColor: Color(0xFF8299BA),
                                   child: Icon(
                                     Icons.arrow_forward_rounded,
                                     color: Colors.white,

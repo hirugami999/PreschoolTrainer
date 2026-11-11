@@ -17,6 +17,7 @@ class TopicCard extends StatelessWidget {
     button: true,
     enabled: onPressed != null,
     label: onPressed == null ? '$title. Скоро' : title,
+    onTap: onPressed,
     excludeSemantics: true,
     child: Material(
       color: AppStyle.blue,
@@ -41,10 +42,8 @@ class TopicCard extends StatelessWidget {
                 color: Colors.white,
               ),
             );
-            final arrow = Icon(
-              onPressed == null
-                  ? Icons.hourglass_empty_rounded
-                  : Icons.arrow_forward_rounded,
+            const unavailableIcon = Icon(
+              Icons.hourglass_empty_rounded,
               color: Colors.white,
               size: 28,
             );
@@ -58,8 +57,10 @@ class TopicCard extends StatelessWidget {
                         Expanded(
                           child: FittedBox(fit: BoxFit.scaleDown, child: label),
                         ),
-                        const SizedBox(width: 8),
-                        arrow,
+                        if (onPressed == null) ...[
+                          const SizedBox(width: 8),
+                          unavailableIcon,
+                        ],
                       ],
                     )
                   : Column(
@@ -67,8 +68,10 @@ class TopicCard extends StatelessWidget {
                         symbol,
                         const SizedBox(height: 8),
                         Expanded(child: Center(child: label)),
-                        const SizedBox(height: 8),
-                        arrow,
+                        if (onPressed == null) ...[
+                          const SizedBox(height: 8),
+                          unavailableIcon,
+                        ],
                       ],
                     ),
             );

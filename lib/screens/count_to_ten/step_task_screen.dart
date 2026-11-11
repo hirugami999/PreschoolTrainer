@@ -38,13 +38,14 @@ class _StepTaskScreenState extends State<StepTaskScreen> {
 
   void generateTask() {
     final amount = widget.step.abs();
-
-    if (widget.step > 0) {
-      // Для +2: первое число от 0 до 8, сумма не больше 10.
-      firstNumber = random.nextInt(11 - amount);
+    final minimum = widget.step > 0 ? 0 : amount;
+    final choices = 11 - amount;
+    if (currentTask > 1 && amount > 2 && choices > 1) {
+      // Pick an index from the range with the previous operand removed.
+      final candidate = minimum + random.nextInt(choices - 1);
+      firstNumber = candidate < firstNumber ? candidate : candidate + 1;
     } else {
-      // Для -2: первое число от 2 до 10, разность не меньше 0.
-      firstNumber = random.nextInt(11 - amount) + amount;
+      firstNumber = minimum + random.nextInt(choices);
     }
   }
 
@@ -63,7 +64,7 @@ class _StepTaskScreenState extends State<StepTaskScreen> {
     });
 
     Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted) return;
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
       nextTask();
     });
   }

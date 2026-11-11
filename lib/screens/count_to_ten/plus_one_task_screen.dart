@@ -47,7 +47,7 @@ class _PlusOneTaskScreenState extends State<PlusOneTaskScreen> {
 
     // Показываем реакцию и автоматически продолжаем.
     Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted) return;
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
       nextTask();
     });
   }

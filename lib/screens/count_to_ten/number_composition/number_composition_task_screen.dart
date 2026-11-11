@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../widgets/exercise_layout.dart';
 import '../../result_screen.dart';
+import 'missing_number_examples.dart';
+import 'number_composition_examples.dart';
 
 // Универсальный экран для обычных примеров и «Число пропало».
 class NumberCompositionTaskScreen extends StatefulWidget {
@@ -25,44 +27,32 @@ class _NumberCompositionTaskScreenState
     extends State<NumberCompositionTaskScreen> {
   final Random _random = Random();
 
-  static const int _totalTasks = 10;
+  static const int _totalTasks = numberCompositionTaskCount;
   int _currentTask = 1;
   int _correctAnswers = 0;
 
-  int _firstPart = 1;
-  bool _missingOnLeft = false;
-  bool _hasPreviousTask = false;
+  late final List<NumberCompositionExample> _examples;
+  NumberCompositionExample get _currentExample => _examples[_currentTask - 1];
+
+  late final List<MissingNumberExample> _missingExamples =
+      generateMissingNumberExamples(widget.number, _random);
+  MissingNumberExample get _currentMissingExample =>
+      _missingExamples[_currentTask - 1];
 
   bool _isAnswered = false;
   bool? _feedbackIsCorrect;
   String _feedbackMessage = '';
 
-  // В обычных примерах ответ равен выбранному числу.
-  // В «Число пропало» нужно найти второе слагаемое.
-  int get _correctAnswer =>
-      widget.isMissingNumber ? widget.number - _firstPart : widget.number;
+  int get _correctAnswer => widget.isMissingNumber
+      ? _currentMissingExample.answer
+      : _currentExample.answer;
 
   @override
   void initState() {
     super.initState();
-    _generateTask();
-  }
-
-  void _generateTask() {
-    int nextFirstPart;
-    bool nextMissingOnLeft;
-
-    // Не показываем два одинаковых примера подряд.
-    do {
-      nextFirstPart = _random.nextInt(widget.number - 1) + 1;
-      nextMissingOnLeft = widget.isMissingNumber && _random.nextBool();
-    } while (_hasPreviousTask &&
-        nextFirstPart == _firstPart &&
-        nextMissingOnLeft == _missingOnLeft);
-
-    _firstPart = nextFirstPart;
-    _missingOnLeft = nextMissingOnLeft;
-    _hasPreviousTask = true;
+    if (!widget.isMissingNumber) {
+      _examples = generateNumberCompositionExamples(widget.number, _random);
+    }
   }
 
   void _checkAnswer(int answer) {
@@ -81,7 +71,7 @@ class _NumberCompositionTaskScreenState
     });
 
     Future.delayed(const Duration(milliseconds: 1200), () {
-      if (!mounted) return;
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) return;
       _nextTask();
     });
   }
@@ -102,7 +92,6 @@ class _NumberCompositionTaskScreenState
 
     setState(() {
       _currentTask++;
-      _generateTask();
       _isAnswered = false;
       _feedbackIsCorrect = null;
       _feedbackMessage = '';
@@ -111,19 +100,13 @@ class _NumberCompositionTaskScreenState
 
   @override
   Widget build(BuildContext context) {
-    final int secondPart = widget.number - _firstPart;
-    final String displayedAnswer = _isAnswered ? '$_correctAnswer' : '?';
-
     final String example;
-    if (!widget.isMissingNumber) {
-      // Обычные примеры: 2 + 3 = ?
-      example = '$_firstPart + $secondPart = $displayedAnswer';
-    } else if (_missingOnLeft) {
-      // Число пропало слева: ? + 2 = 5
-      example = '$displayedAnswer + $_firstPart = ${widget.number}';
+    if (widget.isMissingNumber) {
+      example = _currentMissingExample.expression(revealAnswer: _isAnswered);
     } else {
-      // Число пропало справа: 2 + ? = 5
-      example = '$_firstPart + $displayedAnswer = ${widget.number}';
+      final task = _currentExample;
+      final displayedAnswer = _isAnswered ? '${task.answer}' : '?';
+      example = '${task.left} ${task.symbol} ${task.right} = $displayedAnswer';
     }
 
     return ExerciseLayout(
@@ -135,8 +118,8 @@ class _NumberCompositionTaskScreenState
       totalTasks: _totalTasks,
       feedbackIsCorrect: _feedbackIsCorrect,
       feedbackMessage: _feedbackMessage,
-      minValue: 1,
-      maxValue: widget.isMissingNumber ? widget.number - 1 : widget.number,
+      minValue: 0,
+      maxValue: widget.number,
       enabled: !_isAnswered,
       onAnswerSelected: _checkAnswer,
     );

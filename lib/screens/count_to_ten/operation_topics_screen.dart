@@ -19,7 +19,7 @@ class OperationTopicsScreen extends StatelessWidget {
     return AppScaffold(
       title: title,
       child: TopicGrid(
-        children: List.generate(10, (index) {
+        children: List.generate(9, (index) {
           final number = index + 1;
           final step = isAddition ? number : -number;
 

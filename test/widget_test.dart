@@ -14,6 +14,7 @@ import 'package:preschool_trainer/screens/count_to_ten/number_composition/number
 import 'package:preschool_trainer/screens/result_screen.dart';
 import 'package:preschool_trainer/widgets/topic_card.dart';
 import 'package:preschool_trainer/widgets/answer_options.dart';
+import 'package:preschool_trainer/widgets/exercise_layout.dart';
 
 void main() {
   testWidgets('Home opens mathematics', (tester) async {
@@ -49,7 +50,7 @@ void main() {
           const NumberCompositionScreen(),
           const NumberCompositionModeScreen(number: 10),
           const StepTaskScreen(step: 1, title: '+1'),
-          const StepTaskScreen(step: -10, title: '−10'),
+          const StepTaskScreen(step: -9, title: '−9'),
           const MixedToTenTaskScreen(),
           const NumberCompositionTaskScreen(number: 10, isMissingNumber: false),
           const NumberCompositionTaskScreen(number: 10, isMissingNumber: true),
@@ -93,19 +94,28 @@ void main() {
   testWidgets('Short TopicCard keeps all controls inside its bounds', (
     tester,
   ) async {
+    var taps = 0;
     await tester.pumpWidget(
       MaterialApp(
         home: Center(
           child: SizedBox(
             width: 140,
             height: 80,
-            child: TopicCard(title: 'Счёт в пределах 10', onPressed: () {}),
+            child: TopicCard(
+              title: 'Счёт в пределах 10',
+              onPressed: () => taps++,
+            ),
           ),
         ),
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(find.byIcon(Icons.arrow_forward_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_forward_rounded), findsNothing);
+    expect(find.byIcon(Icons.calculate_rounded), findsOneWidget);
+    final bounds = tester.getRect(find.byType(TopicCard));
+    await tester.tapAt(bounds.topLeft + const Offset(12, 12));
+    await tester.tapAt(bounds.bottomRight - const Offset(12, 12));
+    expect(taps, 2);
   });
 
   testWidgets('Addition route, feedback, completion and home', (tester) async {
@@ -120,16 +130,18 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Сложение'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(find.text('+10'), 300);
-    await tester.tap(find.text('+10'));
+    await tester.scrollUntilVisible(find.text('+9'), 300);
+    await tester.tap(find.text('+9'));
     await tester.pumpAndSettle();
-    expect(find.text('0 + 10 = ?'), findsOneWidget);
     for (var task = 1; task <= 20; task++) {
+      final layout = tester.widget<ExerciseLayout>(find.byType(ExerciseLayout));
+      final firstNumber = int.parse(layout.example.split(' ').first);
       final answer = find.descendant(
         of: find.byType(AnswerOptions),
-        matching: find.text('10'),
+        matching: find.text('${firstNumber + 9}'),
       );
       await tester.ensureVisible(answer);
+      await tester.pump();
       await tester.tap(answer);
       await tester.pump();
       expect(find.text('Верно!'), findsOneWidget);

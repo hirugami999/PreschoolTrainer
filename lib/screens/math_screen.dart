@@ -16,6 +16,7 @@ class MathScreen extends StatelessWidget {
       title: 'Выбери тему',
 
       child: TopicGrid(
+        showMascotPair: true,
         children: [
           // Счёт в пределах 10
           TopicCard(

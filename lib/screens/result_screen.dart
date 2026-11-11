@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../widgets/app_scaffold.dart';
 import '../widgets/app_style.dart';
+import '../widgets/corner_mascot.dart';
 
 class ResultScreen extends StatelessWidget {
   final int correctAnswers, totalTasks;
@@ -26,10 +29,34 @@ class ResultScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.star_rounded,
-                    color: AppStyle.yellow,
-                    size: 100,
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      const starSize = 100.0;
+                      final mascotSize = math.min(
+                        72.0,
+                        (constraints.maxWidth - starSize) / 2 - 8,
+                      );
+                      return SizedBox(
+                        width: double.infinity,
+                        height: starSize,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: AppStyle.yellow,
+                              size: starSize,
+                            ),
+                            if (mascotSize >= 44)
+                              CornerMascot(
+                                mascot: Mascot.bunny,
+                                size: mascotSize,
+                                side: MascotSide.left,
+                              ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 16),
                   const Text(
