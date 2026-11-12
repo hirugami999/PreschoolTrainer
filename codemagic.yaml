@@ -19,10 +19,6 @@ workflows:
       - name: Run Flutter tests
         script: flutter test
 
-      - name: Install CocoaPods
-        script: |
-          cd ios
-          pod install
 
       - name: Build iOS without code signing
         script: flutter build ios --debug --no-codesign
