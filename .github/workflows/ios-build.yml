@@ -1,0 +1,68 @@
+name: Build unsigned iOS IPA
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.47.6'
+
+      - name: Get Flutter dependencies
+        run: flutter pub get
+
+      - name: Build unsigned iOS Release
+        run: flutter build ios --release --no-codesign
+
+      - name: Package and verify IPA
+        shell: bash
+        run: |
+          app_dir="$PWD/build/ios/iphoneos/Runner.app"
+          ipa="$PWD/build/ios/PreschoolTrainer.ipa"
+          if [[ ! -d "$app_dir" ]]; then
+            echo "Missing iOS app bundle: $app_dir" >&2
+            exit 1
+          fi
+
+          plist="$app_dir/Info.plist"
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$plist")
+          executable=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")
+          test -n "$bundle_id" && test -x "$app_dir/$executable" || exit 1
+          printf 'Bundle Identifier: %s\n' "$bundle_id"
+
+          package_dir=$(mktemp -d "${RUNNER_TEMP}/preschool-ipa.XXXXXXXX")
+          mkdir "$package_dir/Payload"
+          cp -pRP "$app_dir" "$package_dir/Payload/"
+          (
+            cd "$package_dir"
+            zip -qry "$package_dir/PreschoolTrainer.ipa" Payload
+          )
+
+          unzip -tq "$package_dir/PreschoolTrainer.ipa"
+          unzip -Z1 "$package_dir/PreschoolTrainer.ipa" > "$package_dir/entries.txt"
+          grep -Fxq 'Payload/Runner.app/Info.plist' "$package_dir/entries.txt"
+          grep -Fxq "Payload/Runner.app/$executable" "$package_dir/entries.txt"
+          mv "$package_dir/PreschoolTrainer.ipa" "$ipa"
+
+      - name: Upload unsigned IPA
+        uses: actions/upload-artifact@v7
+        with:
+          name: PreschoolTrainer
+          path: build/ios/PreschoolTrainer.ipa
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
